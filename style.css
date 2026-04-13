@@ -157,3 +157,70 @@ button:active { transform: scale(0.98); }
 
 .btn-confirm { background: var(--primary); color: black; flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
 .btn-cancel { background: #333; color: white; flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; }
+
+/* --- ESTILO DEL LOGO PREMIUM (CORREGIDO) --- */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px; /* Espacio con el título "ADMIN PANEL" */
+}
+
+.logo-circle {
+    width: 100px;  /* Ajusta el tamaño si lo deseas */
+    height: 100px;
+    background: #ffffff; /* Fondo blanco para el círculo, igual que el logo */
+    border-radius: 50%; /* Esto crea el círculo perfecto */
+    border: 2px solid #d4af37; /* El borde dorado sutil */
+    
+    /* ESTA ES LA REGLA CLAVE QUE FALTABA: */
+    overflow: hidden; /* Corta cualquier parte de la imagen que salga del círculo */
+    
+    padding: 5px; /* Pequeño espacio para que el logo no toque el borde */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); /* Sombra elegante */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-circle img {
+    max-width: 90%; /* Ajusta el tamaño del logo dentro del círculo */
+    max-height: 90%;
+    object-fit: contain; /* Asegura que el logo no se deforme */
+    display: block; /* Elimina espacios extraños debajo de la imagen */
+}
+
+/* --- BOTÓN DE BÚSQUEDA Y VALIDACIÓN (BASE) --- */
+.btn-search {
+    width: 100%;
+    padding: 12px 20px;
+    margin-top: 20px;
+    border: none; /* Quitamos el borde para usar fondo */
+    
+    /* Degradado dorado elegante */
+    background: linear-gradient(135deg, #d4af37 0%, #f1c40f 50%, #d4af37 100%);
+    
+    color: #1a1a1a; /* Texto oscuro para contraste */
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    
+    /* Forma ovalada/suave */
+    border-radius: 50px; 
+    
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Sombra suave */
+    transition: all 0.3s ease; /* Animación suave para hover */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* Espacio para iconos */
+}
+
+/* --- EFECTO HOVER (PASAR EL RATÓN) --- */
+.btn-search:hover {
+    background: linear-gradient(135deg, #f1c40f 0%, #d4af37 50%, #f1c40f 100%);
+    transform: translateY(-3px); /* Pequeña elevación */
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5); /* Brillo dorado */
+}
