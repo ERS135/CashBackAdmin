@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Silva - Panel Premium</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+
+    <div id="overlay-carga">
+        <div class="spinner"></div>
+        <div class="loading-text" id="texto-carga">PROCESANDO...</div>
+    </div>
+
+    <div id="modal-custom" class="modal-overlay">
+        <div class="modal-box" id="modal-content">
+            <h3 id="modal-titulo">AVISO</h3>
+            <p id="modal-mensaje">Cargando mensaje...</p>
+            <div class="modal-btns">
+                <button id="modal-btn-cancel" class="btn-cancel" onclick="cerrarModal()">CANCELAR</button>
+                <button id="modal-btn-ok" class="btn-confirm">ACEPTAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="box">
+            <h2>ADMIN PANEL</h2>
+            <div id="reader"></div>
+            
+            <input type="number" id="adm-tel" placeholder="Número de teléfono">
+            <button class="btn-search" onclick="buscarCliente()">🔍 VALIDAR CLIENTE</button>
+
+            <div id="perfil-cliente" class="info-cliente hidden">
+                <p>Nombre: <b id="res-nombre">---</b></p>
+                <p>Saldo: <b id="res-saldo">$0.00</b></p>
+            </div>
+
+            <div id="seccion-acciones" class="hidden">
+                <div style="border-top: 1px solid #333; margin: 20px 0; padding-top: 10px;">
+                    <p>SUMAR CASHBACK (0.5%)</p>
+                    <input type="number" id="adm-monto" placeholder="Total cuenta ($)">
+                    <button onclick="validarYEjecutar('sumar')">✅ AGREGAR PUNTOS</button>
+                </div>
+
+                <div style="border-top: 1px solid #333; margin: 20px 0; padding-top: 10px;">
+                    <p style="color:#ff4d4d">RESTAR (Cobrar con saldo)</p>
+                    <input type="number" id="adm-canje" placeholder="Monto a descontar ($)">
+                    <button onclick="validarYEjecutar('restar')" style="background:#b22222; color:white">❌ APLICAR CANJE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzVjcGk0-oeMGXuqlCeQPLGsKHDF6ruEWWGRs_uhkWjk17-qY7Ekdq9ucWAL_ZxL3Y5Cg/exec"; // <--- PEGA TU LINK /exec AQUÍ
+
+        // --- FUNCIONES DEL MODAL ---
+        function silvaAlert(titulo, msj) {
+            document.getElementById('modal-titulo').innerText = titulo;
+            document.getElementById('modal-mensaje').innerText = msj;
+            document.getElementById('modal-btn-cancel').style.display = 'none';
+            document.getElementById('modal-btn-ok').onclick = cerrarModal;
+            abrirModal();
+        }
+
+        function silvaConfirm(titulo, msj, accion) {
+            document.getElementById('modal-titulo').innerText = titulo;
+            document.getElementById('modal-mensaje').innerText = msj;
+            document.getElementById('modal-btn-cancel').style.display = 'block';
+            document.getElementById('modal-btn-ok').onclick = () => { cerrarModal(); accion(); };
+            abrirModal();
+        }
+
+        function abrirModal() {
+            document.getElementById('modal-custom').style.display = 'flex';
+            setTimeout(() => document.getElementById('modal-content').classList.add('active'), 10);
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-content').classList.remove('active');
+            setTimeout(() => document.getElementById('modal-custom').style.display = 'none', 300);
+        }
+
+        function mostrarCargando(msj) { 
+            document.getElementById('texto-carga').innerText = msj;
+            document.getElementById('overlay-carga').style.display = 'flex'; 
+        }
+        function ocultarCargando() { document.getElementById('overlay-carga').style.display = 'none'; }
+
+        // --- LÓGICA DE NEGOCIO ---
+        const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+        scanner.render((txt) => { document.getElementById('adm-tel').value = txt; buscarCliente(); });
+
+        async function buscarCliente() {
+            const tel = document.getElementById('adm-tel').value;
+            if (!tel) return;
+            mostrarCargando("BUSCANDO...");
+            try {
+                const resp = await fetch(`${WEB_APP_URL}?telefono=${tel}`);
+                const res = await resp.json();
+                if (res.status === "no_encontrado") {
+                    silvaAlert("NO ENCONTRADO", "El cliente no está registrado en el sistema.");
+                    document.getElementById('perfil-cliente').classList.add('hidden');
+                    document.getElementById('seccion-acciones').classList.add('hidden');
+                } else {
+                    document.getElementById('res-nombre').innerText = res.nombre;
+                    document.getElementById('res-saldo').innerText = "$" + parseFloat(res.puntos).toFixed(2);
+                    document.getElementById('perfil-cliente').classList.remove('hidden');
+                    document.getElementById('seccion-acciones').classList.remove('hidden');
+                }
+            } catch (e) { silvaAlert("ERROR", "Fallo al conectar con el servidor."); } 
+            finally { ocultarCargando(); }
+        }
+
+        function validarYEjecutar(tipo) {
+            const tel = document.getElementById('adm-tel').value;
+            let monto, puntos;
+
+            if (tipo === 'sumar') {
+                monto = document.getElementById('adm-monto').value;
+                if (!monto || monto <= 0) return silvaAlert("ERROR", "Ingresa un monto válido.");
+                puntos = (parseFloat(monto) * 0.005).toFixed(2); // 0.5%
+                silvaConfirm("CONFIRMAR", `¿Sumar $${puntos} de cashback?`, () => ejecutarAccion(tipo, tel, puntos, monto));
+            } else {
+                puntos = document.getElementById('adm-canje').value;
+                const saldoActual = parseFloat(document.getElementById('res-saldo').innerText.replace('$',''));
+                if (!puntos || puntos <= 0) return silvaAlert("ERROR", "Ingresa un monto a canjear.");
+                if (puntos > saldoActual) return silvaAlert("SALDO INSUFICIENTE", "El cliente no tiene puntos suficientes.");
+                silvaConfirm("CONFIRMAR CANJE", `¿Descontar $${puntos} del saldo?`, () => ejecutarAccion(tipo, tel, puntos, 0));
+            }
+        }
+
+        async function ejecutarAccion(tipo, tel, puntos, monto) {
+            mostrarCargando("GUARDANDO...");
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ action: tipo, telefono: tel, puntos: puntos, consumo: monto })
+                });
+                setTimeout(() => { 
+                    ocultarCargando(); 
+                    silvaAlert("ÉXITO", "La operación se realizó correctamente."); 
+                    document.getElementById('adm-monto').value = "";
+                    document.getElementById('adm-canje').value = "";
+                    buscarCliente(); 
+                }, 1500);
+            } catch (e) { 
+                ocultarCargando();
+                silvaAlert("ERROR", "No se pudo guardar la transacción."); 
+            }
+        }
+    </script>
+</body>
+</html>
