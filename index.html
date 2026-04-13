@@ -66,7 +66,7 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzVjcGk0-oeMGXuqlCeQPLGsKHDF6ruEWWGRs_uhkWjk17-qY7Ekdq9ucWAL_ZxL3Y5Cg/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyzKXsuEBRtdaqXz9rDWyxeZfzaV8L0uHDBbb0VH4C3Jyws0hcI7eVn-zcwFOwg3zrYLg/exec"; 
 
         // --- NUEVA LÓGICA DE CÁMARA MANUAL ---
         let html5QrCode;
@@ -174,7 +174,7 @@
             if (tipo === 'sumar') {
                 const monto = document.getElementById('adm-monto').value;
                 if (!monto || monto <= 0) return silvaAlert("ERROR", "Ingresa un monto válido.");
-                const puntos = (parseFloat(monto) * 0.005).toFixed(2);
+                const puntos = (parseFloat(monto) * 0.10).toFixed(2);
                 silvaConfirm("CONFIRMAR", `¿Sumar $${puntos} de cashback?`, () => ejecutarAccion(tipo, tel, puntos, monto));
             } else {
                 const puntos = document.getElementById('adm-canje').value;
