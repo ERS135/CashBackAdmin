@@ -86,7 +86,6 @@ button:active { transform: scale(0.98); }
 
 .info-cliente b { color: var(--primary); font-size: 18px; }
 
-/* Overlay de Carga */
 #overlay-carga {
     display: none;
     position: fixed;
