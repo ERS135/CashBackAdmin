@@ -224,3 +224,96 @@ button:active { transform: scale(0.98); }
     transform: translateY(-3px); /* Pequeña elevación */
     box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5); /* Brillo dorado */
 }
+
+/* DISEÑO BASE (Móvil primero) */
+.admin-layout {
+    display: flex;
+    flex-direction: column; /* Una columna en celular */
+    gap: 20px;
+    width: 100%;
+}
+
+.admin-col {
+    width: 100%;
+}
+
+/* AJUSTE PARA PANTALLAS GRANDES (PC y Tablet) */
+@media (min-width: 768px) {
+    .container {
+        max-width: 1000px; /* Expandimos el contenedor principal */
+        width: 95%;
+    }
+
+    .box {
+        padding: 40px; /* Más espacio interno */
+    }
+
+    .admin-layout {
+        flex-direction: row; /* Cambia a dos columnas */
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .admin-col {
+        width: 48%; /* Cada columna toma casi la mitad */
+        background: rgba(255, 255, 255, 0.03); /* Un fondo sutil para separar */
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Ajuste para que los inputs se vean mejor en PC */
+    input {
+        margin-bottom: 15px;
+    }
+}
+
+ /* Estilos adicionales para la estructura responsiva y estados */
+        .admin-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .admin-col {
+            width: 100%;
+        }
+
+        .estado-espera {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 1000px;
+                width: 95%;
+            }
+            .admin-layout {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .admin-col {
+                width: 50%;
+                padding: 10px;
+            }
+        }
+
+         .admin-layout { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: 20px; }
+        .admin-col { width: 100%; }
+        .estado-espera { text-align: center; padding: 40px 20px; color: #666; background: rgba(255, 255, 255, 0.02); border-radius: 15px; border: 1px dashed rgba(255, 255, 255, 0.1); }
+        
+        /* Mejora visual: Feedback de clic */
+        button:active { transform: scale(0.98); opacity: 0.8; }
+
+        @media (min-width: 768px) {
+            .container { max-width: 1000px; width: 95%; }
+            .admin-layout { flex-direction: row; align-items: flex-start; }
+            .admin-col { width: 50%; padding: 10px; }
+        }

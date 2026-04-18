@@ -6,6 +6,7 @@
     <title>Admin Silva - Panel Premium</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
+    
 </head>
 <body>
 
@@ -35,31 +36,44 @@
 
             <h2>ADMIN PANEL</h2>
             
-            <div id="reader" style="display:none; width: 100%; margin-bottom: 15px;"></div>
-            
-            <div id="control-camara" style="margin-bottom: 20px;">
-                <button class="btn-search" id="btn-toggle-cam" onclick="encenderCamara()"> ABRIR CÁMARA</button>
-            </div>
-            
-            <input type="number" id="adm-tel" placeholder="Número de teléfono">
-            <button class="btn-search" onclick="buscarCliente()">🔍 VALIDAR CLIENTE</button>
+            <div class="admin-layout">
+                <div class="admin-col">
+                    <div id="reader" style="display:none; width: 100%; margin-bottom: 15px;"></div>
+                    <div id="control-camara" style="margin-bottom: 20px;">
+                        <button class="btn-search" id="btn-toggle-cam" onclick="encenderCamara()"> ABRIR CÁMARA</button>
+                    </div>
+                    
+                    <input type="number" id="adm-tel" inputmode="tel" placeholder="Número de teléfono">
+                    <button class="btn-search" onclick="buscarCliente()">🔍 VALIDAR CLIENTE</button>
 
-            <div id="perfil-cliente" class="info-cliente hidden">
-                <p>Nombre: <b id="res-nombre">---</b></p>
-                <p>Saldo: <b id="res-saldo">$0.00</b></p>
-            </div>
-
-            <div id="seccion-acciones" class="hidden">
-                <div class="seccion-input">
-                    <p>SUMAR CASHBACK (0.10%)</p>
-                    <input type="number" id="adm-monto" placeholder="Monto de la venta ($)">
-                    <button onclick="validarAccion('sumar')">✅ REGISTRAR VENTA</button>
+                    <div id="perfil-cliente" class="info-cliente hidden">
+                        <p>Nombre: <b id="res-nombre">---</b></p>
+                        <p>Saldo: <b id="res-saldo">$0.00</b></p>
+                    </div>
                 </div>
 
-                <div class="seccion-input">
-                    <p style="color:#ff4d4d">CANJEAR PUNTOS</p>
-                    <input type="number" id="adm-canje" placeholder="Cantidad a descontar ($)">
-                    <button onclick="validarAccion('restar')" style="background:#b22222; color:white">❌ DESCONTAR SALDO</button>
+                <div class="admin-col">
+                    <div id="estado-espera" class="estado-espera">
+                        <div style="font-size: 40px; margin-bottom: 10px;">⏳</div>
+                        <p style="font-family: sans-serif; font-size: 14px; letter-spacing: 1px;">
+                            ESPERANDO INFORMACIÓN...<br>
+                            <span style="font-size: 12px; opacity: 0.7;">Valide un cliente para ver acciones</span>
+                        </p>
+                    </div>
+
+                    <div id="seccion-acciones" class="hidden">
+                        <div class="seccion-input">
+                            <p>SUMAR CASHBACK (10%)</p>
+                            <input type="text" id="adm-monto" inputmode="decimal" placeholder="Monto de la venta ($)">
+                            <button onclick="validarAccion('sumar')">✅ REGISTRAR VENTA</button>
+                        </div>
+
+                        <div class="seccion-input">
+                            <p style="color:#ff4d4d">CANJEAR PUNTOS</p>
+                            <input type="text" id="adm-canje" inputmode="decimal" placeholder="Cantidad a descontar ($)">
+                            <button onclick="validarAccion('restar')" style="background:#b22222; color:white">❌ DESCONTAR SALDO</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,53 +82,50 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyzKXsuEBRtdaqXz9rDWyxeZfzaV8L0uHDBbb0VH4C3Jyws0hcI7eVn-zcwFOwg3zrYLg/exec"; 
 
-        // --- NUEVA LÓGICA DE CÁMARA MANUAL ---
         let html5QrCode;
-        const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+        const qrConfig = { fps: 15, qrbox: { width: 250, height: 250 } };
 
         async function encenderCamara() {
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
-
+            if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
             try {
                 document.getElementById('reader').style.display = 'block';
-                await html5QrCode.start(
-                    { facingMode: "environment" }, 
-                    qrConfig,
+                await html5QrCode.start({ facingMode: "environment" }, qrConfig,
                     (decodedText) => {
                         document.getElementById('adm-tel').value = decodedText;
-                        apagarCamara(); // Se apaga tras una lectura exitosa
+                        apagarCamara(); 
                         buscarCliente();
                     }
                 );
-                
-                // Actualizar botón para permitir apagado manual
                 const btn = document.getElementById('btn-toggle-cam');
                 btn.innerHTML = "DETENER CÁMARA";
                 btn.style.background = "#b22222";
                 btn.onclick = apagarCamara;
-
-            } catch (err) {
-                console.error("Error al iniciar cámara", err);
-                silvaAlert("ERROR", "No se pudo acceder a la cámara.");
-            }
+            } catch (err) { silvaAlert("ERROR", "No se pudo acceder a la cámara."); }
         }
 
         async function apagarCamara() {
             if (html5QrCode && html5QrCode.isScanning) {
                 await html5QrCode.stop();
                 document.getElementById('reader').style.display = 'none';
-                
-                // Restaurar botón original
                 const btn = document.getElementById('btn-toggle-cam');
                 btn.innerHTML = "ABRIR CÁMARA";
-                btn.style.background = ""; // Vuelve al color del CSS
+                btn.style.background = ""; 
                 btn.onclick = encenderCamara;
             }
         }
 
-        // --- FUNCIONES DEL MODAL ---
+        function configurarFormatoMoneda(idInput) {
+            const input = document.getElementById(idInput);
+            input.addEventListener('input', function(e) {
+                let valor = e.target.value.replace(/\D/g, "");
+                if (valor === "") { e.target.value = ""; return; }
+                e.target.value = "$ " + parseInt(valor).toLocaleString('en-US');
+            });
+        }
+        configurarFormatoMoneda('adm-monto');
+        configurarFormatoMoneda('adm-canje');
+
+        // MODALES
         function silvaAlert(titulo, msj) {
             document.getElementById('modal-titulo').innerText = titulo;
             document.getElementById('modal-mensaje').innerText = msj;
@@ -122,7 +133,6 @@
             document.getElementById('modal-btn-ok').onclick = cerrarModal;
             abrirModal();
         }
-
         function silvaConfirm(titulo, msj, accion) {
             document.getElementById('modal-titulo').innerText = titulo;
             document.getElementById('modal-mensaje').innerText = msj;
@@ -130,24 +140,20 @@
             document.getElementById('modal-btn-ok').onclick = () => { cerrarModal(); accion(); };
             abrirModal();
         }
-
         function abrirModal() {
             document.getElementById('modal-custom').style.display = 'flex';
             setTimeout(() => document.getElementById('modal-content').classList.add('active'), 10);
         }
-
         function cerrarModal() {
             document.getElementById('modal-content').classList.remove('active');
-            setTimeout(() => document.getElementById('modal-custom').style.display = 'none', 300);
+            setTimeout(() => document.getElementById('modal-custom').style.display = 'none', 200);
         }
-
         function mostrarCargando(msj) { 
             document.getElementById('texto-carga').innerText = msj;
             document.getElementById('overlay-carga').style.display = 'flex'; 
         }
         function ocultarCargando() { document.getElementById('overlay-carga').style.display = 'none'; }
 
-        // --- LÓGICA DE NEGOCIO ---
         async function buscarCliente() {
             const tel = document.getElementById('adm-tel').value;
             if (!tel) return;
@@ -159,11 +165,13 @@
                     silvaAlert("AVISO", "El cliente no está registrado.");
                     document.getElementById('perfil-cliente').classList.add('hidden');
                     document.getElementById('seccion-acciones').classList.add('hidden');
+                    document.getElementById('estado-espera').classList.remove('hidden');
                 } else {
                     document.getElementById('res-nombre').innerText = res.nombre;
                     document.getElementById('res-saldo').innerText = "$" + parseFloat(res.puntos).toFixed(2);
                     document.getElementById('perfil-cliente').classList.remove('hidden');
                     document.getElementById('seccion-acciones').classList.remove('hidden');
+                    document.getElementById('estado-espera').classList.add('hidden');
                 }
             } catch (e) { silvaAlert("ERROR", "Fallo al conectar."); } 
             finally { ocultarCargando(); }
@@ -171,13 +179,18 @@
 
         function validarAccion(tipo) {
             const tel = document.getElementById('adm-tel').value;
+            const limpiarNum = (id) => {
+                const val = document.getElementById(id).value;
+                return parseFloat(val.replace(/[$,\s]/g, "")) || 0;
+            };
+
             if (tipo === 'sumar') {
-                const monto = document.getElementById('adm-monto').value;
+                const monto = limpiarNum('adm-monto');
                 if (!monto || monto <= 0) return silvaAlert("ERROR", "Ingresa un monto válido.");
-                const puntos = (parseFloat(monto) * 0.10).toFixed(2);
+                const puntos = (monto * 0.10).toFixed(2);
                 silvaConfirm("CONFIRMAR", `¿Sumar $${puntos} de cashback?`, () => ejecutarAccion(tipo, tel, puntos, monto));
             } else {
-                const puntos = document.getElementById('adm-canje').value;
+                const puntos = limpiarNum('adm-canje');
                 const saldoActual = parseFloat(document.getElementById('res-saldo').innerText.replace('$',''));
                 if (!puntos || puntos <= 0) return silvaAlert("ERROR", "Ingresa un monto a canjear.");
                 if (puntos > saldoActual) return silvaAlert("SALDO INSUFICIENTE", "El cliente no tiene puntos suficientes.");
@@ -185,24 +198,27 @@
             }
         }
 
+        // --- MEJORA: RESPUESTA OPTIMISTA ---
         async function ejecutarAccion(tipo, tel, puntos, monto) {
-            mostrarCargando("GUARDANDO...");
+            // Cerramos y limpiamos de inmediato para que el usuario no espere
+            silvaAlert("ÉXITO", "Registrando operación... Puedes continuar."); 
+            
+            // Limpieza inmediata de campos
+            document.getElementById('adm-monto').value = "";
+            document.getElementById('adm-canje').value = "";
+
             try {
-                await fetch(WEB_APP_URL, {
+                // Se envía a Google Sheets en "segundo plano"
+                fetch(WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify({ action: tipo, telefono: tel, puntos: puntos, consumo: monto })
                 });
-                setTimeout(() => { 
-                    ocultarCargando(); 
-                    silvaAlert("ÉXITO", "Operación realizada correctamente."); 
-                    document.getElementById('adm-monto').value = "";
-                    document.getElementById('adm-canje').value = "";
-                    buscarCliente(); 
-                }, 1500);
+                
+                // Actualizamos el saldo visualmente después de un segundo
+                setTimeout(() => { buscarCliente(); }, 1200);
             } catch (e) { 
-                ocultarCargando();
-                silvaAlert("ERROR", "No se pudo guardar."); 
+                console.error("Error en segundo plano:", e);
             }
         }
     </script>
